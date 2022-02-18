@@ -1,4 +1,4 @@
-package utils
+package zze_goutils
 
 import (
 	"fmt"
