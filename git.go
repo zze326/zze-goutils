@@ -3,9 +3,34 @@ package zze_goutils
 import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/golang/glog"
+	"log"
 	"os"
 )
+
+type GitRepository struct {
+	Username string
+	Password string
+	GitUrl   string
+	GitDir   string
+}
+
+//
+//  NewGitRepository
+//  @Description: 初始化一个 *GitRepository 实例
+//  @param username Git 用户名
+//  @param password Git 用户密码
+//  @param gitUrl Git 仓库 Url
+//  @param gitDir Git 本地目录
+//  @return *GitRepository
+//
+func NewGitRepository(username, password, gitUrl, gitDir string) *GitRepository {
+	return &GitRepository{
+		Username: username,
+		Password: password,
+		GitUrl:   gitUrl,
+		GitDir:   gitDir,
+	}
+}
 
 //
 //  GitPull
@@ -15,28 +40,26 @@ import (
 //  @param password Git 用户密码
 //  @return error 错误信息
 //
-func GitPull(gitDir, username, password string) (err error) {
-	r, err := git.PlainOpen(gitDir)
+func (gp *GitRepository) GitPull() (err error) {
+	r, err := git.PlainOpen(gp.GitDir)
 	if err != nil {
 		return
 	}
 
-	// Get the working directory for the repository
 	w, err := r.Worktree()
 	if err != nil {
 		return
 	}
 
-	// Pull the latest changes from the origin remote and merge into the current branch
 	err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: &http.BasicAuth{
-		Username: username,
-		Password: password,
+		Username: gp.Username,
+		Password: gp.Password,
 	}})
+
 	if err != nil {
 		return
 	}
 
-	// Print the latest commit that was just pulled
 	ref, err := r.Head()
 	if err != nil {
 		return
@@ -46,7 +69,7 @@ func GitPull(gitDir, username, password string) (err error) {
 	if err != nil {
 		return
 	}
-	glog.Info(commit)
+	log.Println(commit)
 	return nil
 }
 
@@ -58,13 +81,13 @@ func GitPull(gitDir, username, password string) (err error) {
 //  @param username Git 用户名
 //  @param password Git 用户密码
 //
-func GitClone(gitUrl, gitDir, username, password string) (err error) {
-	_, err = git.PlainClone(gitDir, false, &git.CloneOptions{
-		URL:      gitUrl,
+func (gp *GitRepository) GitClone() (err error) {
+	_, err = git.PlainClone(gp.GitDir, false, &git.CloneOptions{
+		URL:      gp.GitUrl,
 		Progress: os.Stdout,
 		Auth: &http.BasicAuth{
-			Username: username,
-			Password: password,
+			Username: gp.Username,
+			Password: gp.Password,
 		},
 		//ReferenceName: "master",
 		//SingleBranch:  true,

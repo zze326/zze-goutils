@@ -2,9 +2,9 @@ package zze_goutils
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -120,8 +120,7 @@ func refactorFunc(old, new string, filePatterns []string) filepath.WalkFunc {
 				if err != nil {
 					return err
 				}
-
-				glog.Infof("Refactoring: %s\n", path)
+				log.Printf("Refactoring: %s\n", path)
 
 				newContents := strings.Replace(string(read), old, new, -1)
 
