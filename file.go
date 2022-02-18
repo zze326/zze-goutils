@@ -2,6 +2,7 @@ package zze_goutils
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
 	"os"
@@ -10,7 +11,13 @@ import (
 	"strings"
 )
 
-// 拷贝文件
+//
+//  CopyFile
+//  @Description: 拷贝单个文件
+//  @param src 源路径
+//  @param dst 目标路径
+//  @return error 错误信息
+//
 func CopyFile(src, dst string) error {
 	var err error
 	var srcfd *os.File
@@ -36,7 +43,13 @@ func CopyFile(src, dst string) error {
 	return os.Chmod(dst, srcinfo.Mode())
 }
 
-// 拷贝目录
+//
+//  CopyDir
+//  @Description: 拷贝目录
+//  @param src 源路径
+//  @param dst 目标路径
+//  @return error 错误信息
+//
 func CopyDir(src string, dst string) error {
 	var err error
 	var fds []os.FileInfo
@@ -70,7 +83,16 @@ func CopyDir(src string, dst string) error {
 	return nil
 }
 
-// 在指定目录下递归所有目录下文件名符合 patterns 规则文件替换文件内容中的指定字符串为新字符串
+//
+//
+//  ReplaceStrInAllFile
+//  @Description: 在指定目录下递归所有目录将文件名符合 patterns 规则的文件替换文件内容中的指定字符串为新字符串
+//  @param dir 递归的根目录
+//  @param old 要替换的字符串
+//  @param new 替换后的字符串
+//  @param patterns 文件名规则，如 *.yaml、*.json
+//  @return error 错误信息
+//
 func ReplaceStrInAllFile(dir, old, new string, patterns ...string) error {
 	return filepath.Walk(dir, refactorFunc(old, new, patterns))
 }
@@ -99,7 +121,7 @@ func refactorFunc(old, new string, filePatterns []string) filepath.WalkFunc {
 					return err
 				}
 
-				fmt.Println("Refactoring:", path)
+				glog.Infof("Refactoring: %s\n", path)
 
 				newContents := strings.Replace(string(read), old, new, -1)
 
@@ -114,14 +136,19 @@ func refactorFunc(old, new string, filePatterns []string) filepath.WalkFunc {
 	})
 }
 
-// 判断指定文件是否存在
-func IsExist(path string)(bool){
+//
+//  IsExist
+//  @Description: 判断指定文件是否存在
+//  @param path 文件路径
+//  @return bool true 为存在
+//
+func IsExist(path string) bool {
 	_, err := os.Stat(path)
-	if err != nil{
-		if os.IsExist(err){
+	if err != nil {
+		if os.IsExist(err) {
 			return true
 		}
-		if os.IsNotExist(err){
+		if os.IsNotExist(err) {
 			return false
 		}
 		fmt.Println(err)
