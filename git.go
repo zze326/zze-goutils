@@ -1,17 +1,20 @@
 package zze_goutils
 
 import (
+	"fmt"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"log"
 	"os"
 )
 
 type GitRepository struct {
-	Username string
-	Password string
-	GitUrl   string
-	GitDir   string
+	Username   string
+	Password   string
+	GitUrl     string
+	GitDir     string
+	BranchName string
 }
 
 //
@@ -23,12 +26,13 @@ type GitRepository struct {
 //  @param gitDir Git 本地目录
 //  @return *GitRepository
 //
-func NewGitRepository(username, password, gitUrl, gitDir string) *GitRepository {
+func NewGitRepository(username, password, gitUrl, gitDir, branchName string) *GitRepository {
 	return &GitRepository{
-		Username: username,
-		Password: password,
-		GitUrl:   gitUrl,
-		GitDir:   gitDir,
+		Username:   username,
+		Password:   password,
+		GitUrl:     gitUrl,
+		GitDir:     gitDir,
+		BranchName: branchName,
 	}
 }
 
@@ -89,7 +93,7 @@ func (gp *GitRepository) GitClone() (err error) {
 			Username: gp.Username,
 			Password: gp.Password,
 		},
-		//ReferenceName: "master",
+		ReferenceName: plumbing.ReferenceName(gp.BranchName),
 		//SingleBranch:  true,
 	})
 
@@ -97,4 +101,32 @@ func (gp *GitRepository) GitClone() (err error) {
 		return
 	}
 	return
+}
+
+//
+//  CloneOrPullGitRepo
+//  @Description: 进入给定的目录执行 pull 操作，如果该目录不存在，则从给定的 git url clone 仓库到该目录
+//  @receiver gp
+//  @return error
+//
+func (gp *GitRepository) CloneOrPullGitRepo() error {
+	if IsExist(gp.GitDir) {
+		err := gp.GitPull()
+		if err != nil {
+			if fmt.Sprintf("%s", err) == "already up-to-date" {
+				return nil
+			}
+			log.Printf("git pull failed in [%s], err: %v", gp.GitDir, err)
+			err = gp.GitClone()
+			if err != nil {
+				return fmt.Errorf("git clone [%s] to directory [%s] failed, err: %v", gp.GitUrl, gp.GitDir, err)
+			}
+		}
+	} else {
+		err := gp.GitClone()
+		if err != nil {
+			return fmt.Errorf("git clone [%s] to directory [%s] failed, err: %v", gp.GitUrl, gp.GitDir, err)
+		}
+	}
+	return nil
 }

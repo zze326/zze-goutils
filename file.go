@@ -155,3 +155,43 @@ func IsExist(path string) bool {
 	}
 	return true
 }
+
+//
+//  AbsentFile
+//  @Description: 删除文件，确保指定路径的文件不存在
+//  @param path	文件路径
+//  @return bool 是否删除成功
+//  @return error
+//
+func AbsentFile(path string) (bool, error) {
+	if IsExist(path) {
+		err := os.Remove(path)
+		if err != nil {
+			if !IsExist(path) {
+				return true, nil
+			}
+			return false, err
+		}
+	}
+	return true, nil
+}
+
+//
+//  AbsentFile
+//  @Description: 删除目录，确保指定路径的目录不存在
+//  @param path	目录路径
+//  @return bool 是否删除成功
+//  @return error
+//
+func AbsentDir(path string) (bool, error) {
+	if IsExist(path) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			if !IsExist(path) {
+				return true, nil
+			}
+			return false, err
+		}
+	}
+	return true, nil
+}

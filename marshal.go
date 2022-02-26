@@ -1,10 +1,10 @@
 package zze_goutils
 
 import (
+	"fmt"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 )
-
 
 //
 //  UnmarshalYamlFileToMap
@@ -38,4 +38,19 @@ func UnmarshalYamlToMap(yamlStr string) (map[interface{}]interface{}, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+//
+//  MarshalObjectToYamlString
+//  @Description: 将对象序列化为 Yaml 格式字符串
+//  @param obj 目标对象
+//  @return string 序列化后的 Yaml 字符串
+//  @return error
+//
+func MarshalObjectToYamlString(obj interface{}) (string, error) {
+	bs, err := yaml.Marshal(obj)
+	if err != nil {
+		return "", fmt.Errorf("marshal obj [%#v] faild, err: %v", obj, err)
+	}
+	return string(bs), nil
 }
